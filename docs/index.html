@@ -600,7 +600,7 @@ function formatQuestion(q) {
     if (q.type === 'fill') {
         return q.question.replace('____', '<span class="q-blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
     }
-    return q.question;
+    return q.question.replace(/\n/g, '<br>');
 }
 
 function selectOption(qId, optIndex) {
