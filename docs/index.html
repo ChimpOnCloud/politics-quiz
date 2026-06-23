@@ -337,15 +337,13 @@
 <div class="container">
     <!-- Mode Selector -->
     <div class="mode-selector">
-        <button class="mode-btn active" onclick="setMode('all')">全部题目</button>
-        <button class="mode-btn" onclick="setMode('choice')">选择题</button>
-        <button class="mode-btn" onclick="setMode('fill')">填空题</button>
-        <button class="mode-btn" onclick="setMode('wrong')">错题回顾</button>
+        <button class="mode-btn active" onclick="setMode('global')">全局打乱复习</button>
+        <button class="mode-btn" onclick="setMode('monthly')">按月半复习</button>
     </div>
 
-    <!-- Source Navigation -->
-    <div class="nav-panel">
-        <h3>📂 按讲义练习</h3>
+    <!-- Monthly Navigation -->
+    <div class="nav-panel" id="monthlyNav" style="display:none">
+        <h3>📅 选择月份</h3>
         <div class="source-grid" id="sourceGrid"></div>
     </div>
 
@@ -384,13 +382,36 @@
 
 <script>
 // ===================== QUESTION BANK =====================
-const QUESTIONS = [
-];
+let QUESTIONS = [];
+let MONTHS = []; // { id: "2025_10_1", label: "2025年10月上", file: "2025_10_1.json" }
+
+// Load questions from JSON
+async function loadQuestions() {
+    try {
+        // Load manifest
+        const manifestResp = await fetch('data/manifest.json');
+        const manifest = await manifestResp.json();
+        MONTHS = manifest.months;
+
+        // Load all questions
+        for (const month of MONTHS) {
+            const resp = await fetch(`data/${month.file}`);
+            const questions = await resp.json();
+            questions.forEach(q => {
+                q.monthId = month.id;
+                QUESTIONS.push(q);
+            });
+        }
+        console.log(`Loaded ${QUESTIONS.length} questions from ${MONTHS.length} months`);
+    } catch (e) {
+        console.error('Failed to load questions:', e);
+    }
+}
 
 // ===================== APP STATE =====================
 let state = {
-    mode: 'all',           // all, choice, fill, wrong
-    activeSource: null,    // null = all sources, "讲义1", "测试"
+    mode: 'global',        // global, monthly
+    activeMonth: null,     // null = all, "2025_10_1", etc.
     currentIndex: 0,
     questions: [],         // current filtered questions
     answered: {},          // { questionId: { correct: bool, userAnswer: any } }
@@ -424,55 +445,54 @@ function saveProgress() {
     } catch(e) {}
 }
 
-// ===================== SOURCES =====================
-function getSources() {
-    const sources = [...new Set(QUESTIONS.map(q => q.source))];
-    // Ensure "测试" is always listed even if empty
-    if (!sources.includes("测试")) {
-        sources.push("测试");
-    }
-    return sources;
-}
-
-function renderSourceGrid() {
+// ===================== MONTHS =====================
+function renderMonthGrid() {
     const grid = document.getElementById('sourceGrid');
-    const sources = getSources();
-    grid.innerHTML = `<button class="source-btn ${!state.activeSource ? 'active' : ''}" onclick="selectSource(null)">
-        全部讲义 <span class="count">(${QUESTIONS.length})</span>
+    grid.innerHTML = `<button class="source-btn ${!state.activeMonth ? 'active' : ''}" onclick="selectMonth(null)">
+        全部月份 <span class="count">(${QUESTIONS.length})</span>
     </button>`;
-    sources.forEach(source => {
-        const count = QUESTIONS.filter(q => q.source === source).length;
-        const doneCount = QUESTIONS.filter(q => q.source === source && state.answered[q.id]).length;
-        const isActive = state.activeSource === source;
+    MONTHS.forEach(month => {
+        const count = QUESTIONS.filter(q => q.monthId === month.id).length;
+        const doneCount = QUESTIONS.filter(q => q.monthId === month.id && state.answered[q.id]).length;
+        const isActive = state.activeMonth === month.id;
         const isDone = doneCount === count && count > 0;
-        grid.innerHTML += `<button class="source-btn ${isActive ? 'active' : ''}" onclick="selectSource('${source}')">
-            ${source} <span class="count">(${doneCount}/${count})</span>
+        grid.innerHTML += `<button class="source-btn ${isActive ? 'active' : ''}" onclick="selectMonth('${month.id}')">
+            ${month.label} <span class="count">(${doneCount}/${count})</span>
             ${isDone ? '<span class="badge done">✓</span>' : ''}
         </button>`;
     });
 }
 
-function selectSource(source) {
-    state.activeSource = source;
+function selectMonth(monthId) {
+    state.activeMonth = monthId;
     state.currentIndex = 0;
     filterQuestions();
-    renderSourceGrid();
+    renderMonthGrid();
     renderQuestion();
 }
 
 // ===================== FILTER =====================
+function shuffleArray(arr) {
+    const shuffled = [...arr];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 function filterQuestions() {
     let qs = [...QUESTIONS];
-    if (state.activeSource) {
-        qs = qs.filter(q => q.source === state.activeSource);
+
+    if (state.mode === 'monthly' && state.activeMonth) {
+        qs = qs.filter(q => q.monthId === state.activeMonth);
     }
-    if (state.mode === 'choice') {
-        qs = qs.filter(q => q.type === 'choice');
-    } else if (state.mode === 'fill') {
-        qs = qs.filter(q => q.type === 'fill');
-    } else if (state.mode === 'wrong') {
-        qs = qs.filter(q => state.wrongIds.has(q.id));
+
+    // Shuffle in global mode
+    if (state.mode === 'global') {
+        qs = shuffleArray(qs);
     }
+
     state.questions = qs;
     document.getElementById('stat-total').textContent = qs.length;
 }
@@ -480,9 +500,17 @@ function filterQuestions() {
 function setMode(mode) {
     state.mode = mode;
     state.currentIndex = 0;
+    state.activeMonth = null;
+
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
+
+    // Show/hide monthly nav
+    const monthlyNav = document.getElementById('monthlyNav');
+    monthlyNav.style.display = mode === 'monthly' ? 'block' : 'none';
+
     filterQuestions();
+    renderMonthGrid();
     renderQuestion();
 }
 
@@ -494,8 +522,8 @@ function renderQuestion() {
 
     if (state.questions.length === 0) {
         area.innerHTML = `<div class="question-card" style="text-align:center;padding:48px 20px">
-            <div style="font-size:48px;margin-bottom:16px">${state.mode === 'wrong' ? '🎉' : '📭'}</div>
-            <div style="font-size:16px;color:#888">${state.mode === 'wrong' ? '没有错题，继续保持！' : (state.activeSource === '测试' ? '暂无题目，等待添加新讲义' : '暂无题目')}</div>
+            <div style="font-size:48px;margin-bottom:16px">📭</div>
+            <div style="font-size:16px;color:#888">暂无题目</div>
         </div>`;
         updateProgress();
         return;
@@ -515,7 +543,7 @@ function renderQuestion() {
             第 ${state.currentIndex + 1} / ${state.questions.length} 题
             <span class="q-topic">${q.topic}</span>
             <span class="q-source">${q.source}</span>
-            <span class="q-type">${q.type === 'choice' ? '选择题' : '填空题'}</span>
+            <span class="q-type">选择题</span>
         </div>
         <div class="q-text">${formatQuestion(q)}</div>`;
 
@@ -649,7 +677,7 @@ function updateStats() {
     const done = Object.keys(state.answered).length;
     document.getElementById('stat-done').textContent = done;
     document.getElementById('stat-total').textContent = QUESTIONS.length;
-    renderSourceGrid();
+    renderMonthGrid();
 }
 
 // ===================== RESULT =====================
@@ -670,11 +698,9 @@ function showResult() {
 }
 
 function reviewWrong() {
-    state.mode = 'wrong';
+    // Filter to wrong questions only
+    state.questions = QUESTIONS.filter(q => state.wrongIds.has(q.id));
     state.currentIndex = 0;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.mode-btn')[3].classList.add('active');
-    filterQuestions();
     renderQuestion();
 }
 
@@ -693,10 +719,11 @@ function restartQuiz() {
 }
 
 // ===================== INIT =====================
-function init() {
+async function init() {
+    await loadQuestions();
     loadProgress();
     filterQuestions();
-    renderSourceGrid();
+    renderMonthGrid();
     updateStats();
     renderQuestion();
 }
