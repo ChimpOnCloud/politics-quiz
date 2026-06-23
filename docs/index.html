@@ -317,6 +317,49 @@
         }
         /* Hidden */
         .hidden { display: none !important; }
+        /* Wrong question review card */
+        .wrong-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            border-left: 4px solid #ff4757;
+        }
+        .wrong-card .wrong-result {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .wrong-card .wrong-result .tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .wrong-card .wrong-result .tag.user { background: #ffe0e0; color: #ff4757; }
+        .wrong-card .wrong-result .tag.correct { background: #e0ffe0; color: #2ed573; }
+        .wrong-card .option.review-only {
+            padding: 10px 14px;
+            font-size: 14px;
+            line-height: 1.5;
+            cursor: default;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .wrong-card .option.review-only.is-correct {
+            border-color: #2ed573;
+            background: #f0fff4;
+        }
+        .wrong-card .option.review-only.is-wrong {
+            border-color: #ff4757;
+            background: #fff5f5;
+        }
     </style>
 </head>
 <body>
@@ -360,8 +403,9 @@
 <div class="container">
     <!-- Mode Selector -->
     <div class="mode-selector">
-        <button class="mode-btn active" onclick="setMode('global')">全局打乱复习</button>
-        <button class="mode-btn" onclick="setMode('monthly')">按月半复习</button>
+        <button class="mode-btn active" onclick="setMode('global', this)">全局打乱复习</button>
+        <button class="mode-btn" onclick="setMode('monthly', this)">按月半复习</button>
+        <button class="mode-btn" onclick="setMode('wrong', this)">错题本</button>
     </div>
 
     <!-- Monthly Navigation -->
@@ -535,6 +579,14 @@ function filterQuestions() {
         qs = qs.filter(q => q.monthId === state.activeMonth);
     }
 
+    // Wrong mode: only show wrong questions
+    if (state.mode === 'wrong') {
+        qs = qs.filter(q => state.wrongIds.has(q.id));
+    } else {
+        // Normal mode: filter out already answered questions
+        qs = qs.filter(q => !state.answered[q.id]);
+    }
+
     // Shuffle in global mode
     if (state.mode === 'global') {
         qs = shuffleArray(qs);
@@ -544,13 +596,13 @@ function filterQuestions() {
     document.getElementById('stat-total').textContent = qs.length;
 }
 
-function setMode(mode) {
+function setMode(mode, btn) {
     state.mode = mode;
     state.currentIndex = 0;
     state.activeMonth = null;
 
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
+    btn.classList.add('active');
 
     // Show/hide monthly nav
     const monthlyNav = document.getElementById('monthlyNav');
@@ -568,11 +620,18 @@ function renderQuestion() {
     result.classList.remove('show');
 
     if (state.questions.length === 0) {
+        const emptyMsg = state.mode === 'wrong' ? '没有错题，继续保持！🎉' : '暂无题目';
         area.innerHTML = `<div class="question-card" style="text-align:center;padding:48px 20px">
-            <div style="font-size:48px;margin-bottom:16px">📭</div>
-            <div style="font-size:16px;color:#888">暂无题目</div>
+            <div style="font-size:48px;margin-bottom:16px">${state.mode === 'wrong' ? '🎉' : '📭'}</div>
+            <div style="font-size:16px;color:#888">${emptyMsg}</div>
         </div>`;
         updateProgress();
+        return;
+    }
+
+    // Wrong mode: show all wrong questions as read-only cards
+    if (state.mode === 'wrong') {
+        renderWrongList();
         return;
     }
 
@@ -639,6 +698,41 @@ function renderQuestion() {
     </div>`;
 
     html += `</div>`;
+    area.innerHTML = html;
+    updateProgress();
+}
+
+// Render wrong questions as a scrollable read-only list
+function renderWrongList() {
+    const area = document.getElementById('questionArea');
+    const labels = ['A', 'B', 'C', 'D'];
+    let html = '';
+
+    state.questions.forEach((q, idx) => {
+        const answered = state.answered[q.id];
+        html += `<div class="wrong-card">
+            <div class="wrong-result">
+                <span style="font-weight:600;color:#333">错题 ${idx + 1}</span>
+                <span class="q-topic" style="background:#f0f0ff;color:#667eea;font-size:11px;padding:2px 8px;border-radius:4px">${q.topic}</span>
+                <span class="tag user">你的答案：${labels[answered.userAnswer]}</span>
+                <span class="tag correct">正确答案：${labels[q.answer]}</span>
+            </div>
+            <div style="font-size:15px;line-height:1.7;margin-bottom:12px;font-weight:500">${formatQuestion(q)}</div>`;
+
+        q.options.forEach((opt, i) => {
+            let cls = 'review-only';
+            if (i === q.answer) cls += ' is-correct';
+            else if (i === answered.userAnswer) cls += ' is-wrong';
+            html += `<div class="option ${cls}">
+                <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-right:10px;${i === q.answer ? 'background:#2ed573;color:white' : (i === answered.userAnswer ? 'background:#ff4757;color:white' : 'background:#f0f0f0;color:#888')}">${labels[i]}</div>
+                <div>${opt}</div>
+            </div>`;
+        });
+
+        html += `<div class="explanation show" style="margin-top:12px">${q.explanation}</div>`;
+        html += `</div>`;
+    });
+
     area.innerHTML = html;
     updateProgress();
 }
