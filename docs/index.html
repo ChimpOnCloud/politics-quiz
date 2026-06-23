@@ -321,33 +321,27 @@
 </head>
 <body>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-
+<!-- Firebase SDK (compat version - loads synchronously) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+  // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCAWVFG5-ohsk1T7VTn-zRmCxR_VU4fS_4",
     authDomain: "politics-quiz2.firebaseapp.com",
-    databaseURL: "https://politics-quiz2-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    databaseURL: "https://politics-quiz2-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "politics-quiz2",
     storageBucket: "politics-quiz2.firebasestorage.app",
     messagingSenderId: "976668868665",
     appId: "1:976668868665:web:8a8e20e7b155649e0b4de8"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
 
-  // Expose to global scope for the app to use
-  window.firebaseDb = db;
-  window.firebaseRef = ref;
-  window.firebaseSet = set;
-  window.firebaseOnValue = onValue;
+  // Make Firebase available globally
+  window.firebaseDb = database;
   window.firebaseReady = true;
-
-  // Notify app that Firebase is ready
-  window.dispatchEvent(new Event('firebaseReady'));
 </script>
 
 <div class="header">
@@ -449,7 +443,7 @@ let state = {
     wrongCount: 0,
 };
 
-// Load progress from localStorage
+// Load progress from localStorage + Firebase
 function loadProgress() {
     try {
         const saved = localStorage.getItem('quiz_progress');
@@ -461,6 +455,23 @@ function loadProgress() {
             state.wrongCount = data.wrongCount || 0;
         }
     } catch(e) {}
+
+    // Listen to Firebase for real-time sync
+    if (window.firebaseReady) {
+        const progressRef = window.firebaseDb.ref('progress');
+        progressRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                state.answered = data.answered || {};
+                state.wrongIds = new Set(data.wrongIds || []);
+                state.correctCount = data.correctCount || 0;
+                state.wrongCount = data.wrongCount || 0;
+                updateStats();
+                renderMonthGrid();
+                renderQuestion();
+            }
+        });
+    }
 }
 
 function saveProgress() {
@@ -477,8 +488,7 @@ function saveProgress() {
 
     // Save to Firebase
     if (window.firebaseReady) {
-        const progressRef = window.firebaseRef(window.firebaseDb, 'progress');
-        window.firebaseSet(progressRef, progressData);
+        window.firebaseDb.ref('progress').set(progressData);
     }
 }
 
@@ -763,23 +773,6 @@ async function init() {
     renderMonthGrid();
     updateStats();
     renderQuestion();
-
-    // When Firebase is ready, re-sync progress from cloud
-    window.addEventListener('firebaseReady', () => {
-        const progressRef = window.firebaseRef(window.firebaseDb, 'progress');
-        window.firebaseOnValue(progressRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                state.answered = data.answered || {};
-                state.wrongIds = new Set(data.wrongIds || []);
-                state.correctCount = data.correctCount || 0;
-                state.wrongCount = data.wrongCount || 0;
-                updateStats();
-                renderMonthGrid();
-                renderQuestion();
-            }
-        });
-    });
 }
 
 init();
