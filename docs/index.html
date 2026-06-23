@@ -449,7 +449,7 @@ let state = {
     wrongCount: 0,
 };
 
-// Load progress from localStorage + Firebase
+// Load progress from localStorage
 function loadProgress() {
     try {
         const saved = localStorage.getItem('quiz_progress');
@@ -461,23 +461,6 @@ function loadProgress() {
             state.wrongCount = data.wrongCount || 0;
         }
     } catch(e) {}
-
-    // Listen to Firebase for real-time updates
-    if (window.firebaseReady) {
-        const progressRef = window.firebaseRef(window.firebaseDb, 'progress');
-        window.firebaseOnValue(progressRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                state.answered = data.answered || {};
-                state.wrongIds = new Set(data.wrongIds || []);
-                state.correctCount = data.correctCount || 0;
-                state.wrongCount = data.wrongCount || 0;
-                updateStats();
-                renderMonthGrid();
-                renderQuestion();
-            }
-        });
-    }
 }
 
 function saveProgress() {
@@ -780,6 +763,23 @@ async function init() {
     renderMonthGrid();
     updateStats();
     renderQuestion();
+
+    // When Firebase is ready, re-sync progress from cloud
+    window.addEventListener('firebaseReady', () => {
+        const progressRef = window.firebaseRef(window.firebaseDb, 'progress');
+        window.firebaseOnValue(progressRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                state.answered = data.answered || {};
+                state.wrongIds = new Set(data.wrongIds || []);
+                state.correctCount = data.correctCount || 0;
+                state.wrongCount = data.wrongCount || 0;
+                updateStats();
+                renderMonthGrid();
+                renderQuestion();
+            }
+        });
+    });
 }
 
 init();
