@@ -192,13 +192,45 @@
         /* True/False options */
         .tf-options {
             flex-direction: row !important;
-            gap: 12px;
+            gap: 14px;
         }
         .tf-options .option {
             flex: 1;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            font-weight: 500;
+            padding: 18px 12px;
+            border-radius: 14px;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 16px;
         }
+        .tf-options .option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .tf-options .tf-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: #f0f0f0;
+            transition: all 0.2s;
+        }
+        .tf-options .tf-icon svg { display: block; }
+        .tf-options .option.review-only .tf-icon { width: 26px; height: 26px; }
+        .tf-options .option.review-only .tf-icon svg { width: 16px; height: 16px; }
+        .tf-options .tf-true .tf-icon { background: #e8f8ef; color: #2ed573; }
+        .tf-options .tf-false .tf-icon { background: #fff0f0; color: #ff4757; }
+        .tf-options .tf-true:hover { border-color: #2ed573; background: #f6fdf8; }
+        .tf-options .tf-false:hover { border-color: #ff4757; background: #fff8f8; }
+        .tf-options .option.correct { border-color: #2ed573; background: #f0fff4; }
+        .tf-options .option.correct .tf-icon { background: #2ed573; color: white; }
+        .tf-options .option.wrong { border-color: #ff4757; background: #fff5f5; }
+        .tf-options .option.wrong .tf-icon { background: #ff4757; color: white; }
         /* Explanation */
         .explanation {
             margin-top: 16px;
@@ -370,6 +402,16 @@
             border-color: #ff4757;
             background: #fff5f5;
         }
+        .wrong-card .tf-options .option.review-only {
+            margin-bottom: 0;
+            padding: 14px 10px;
+        }
+        .wrong-card .tf-options .option.review-only.is-correct .tf-icon,
+        .wrong-card .tf-options .option.review-only.is-wrong .tf-icon {
+            color: white;
+        }
+        .wrong-card .tf-options .option.review-only.is-correct .tf-icon { background: #2ed573; }
+        .wrong-card .tf-options .option.review-only.is-wrong .tf-icon { background: #ff4757; }
     </style>
 </head>
 <body>
@@ -653,7 +695,12 @@ function renderQuestion() {
     const q = state.questions[state.currentIndex];
     const isAnswered = state.answered[q.id];
     const labels = ['A', 'B', 'C', 'D'];
-    const tfLabels = ['✓ 正确', '✗ 错误'];
+    const tfIcons = [
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    ];
+    const tfClasses = ['tf-true', 'tf-false'];
+    const tfLabels = ['正确', '错误'];
     const typeLabel = q.type === 'true_false' ? '判断题' : q.type === 'choice' ? '选择题' : '填空题';
 
     let html = `<div class="question-card">
@@ -666,8 +713,8 @@ function renderQuestion() {
         <div class="q-text">${formatQuestion(q)}</div>`;
 
     if (q.type === 'choice' || q.type === 'true_false') {
-        const useLabels = q.type === 'true_false' ? tfLabels : labels;
-        html += `<div class="options ${q.type === 'true_false' ? 'tf-options' : ''}">`;
+        const isTF = q.type === 'true_false';
+        html += `<div class="options ${isTF ? 'tf-options' : ''}">`;
         q.options.forEach((opt, i) => {
             let cls = '';
             if (isAnswered) {
@@ -675,10 +722,17 @@ function renderQuestion() {
                 if (i === q.answer) cls += ' correct';
                 else if (i === isAnswered.userAnswer) cls += ' wrong';
             }
-            html += `<div class="option ${cls}" onclick="selectOption(${q.id}, ${i})">
-                <div class="opt-label">${useLabels[i]}</div>
-                <div>${opt}</div>
-            </div>`;
+            if (isTF) {
+                html += `<div class="option ${cls} ${tfClasses[i]}" onclick="selectOption(${q.id}, ${i})">
+                    <div class="tf-icon">${tfIcons[i]}</div>
+                    <div>${tfLabels[i]}</div>
+                </div>`;
+            } else {
+                html += `<div class="option ${cls}" onclick="selectOption(${q.id}, ${i})">
+                    <div class="opt-label">${labels[i]}</div>
+                    <div>${opt}</div>
+                </div>`;
+            }
         });
         html += `</div>`;
     } else {
@@ -719,12 +773,16 @@ function renderQuestion() {
 function renderWrongList() {
     const area = document.getElementById('questionArea');
     const labels = ['A', 'B', 'C', 'D'];
+    const tfIconsSmall = [
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    ];
     let html = '';
 
     state.questions.forEach((q, idx) => {
         const answered = state.answered[q.id];
-        const tfLabels2 = ['✓', '✗'];
-        const reviewLabels = q.type === 'true_false' ? tfLabels2 : labels;
+        const isTF = q.type === 'true_false';
+        const reviewLabels = isTF ? ['正确', '错误'] : labels;
         html += `<div class="wrong-card">
             <div class="wrong-result">
                 <span style="font-weight:600;color:#333">错题 ${idx + 1}</span>
@@ -734,15 +792,30 @@ function renderWrongList() {
             </div>
             <div style="font-size:15px;line-height:1.7;margin-bottom:12px;font-weight:500">${formatQuestion(q)}</div>`;
 
-        q.options.forEach((opt, i) => {
-            let cls = 'review-only';
-            if (i === q.answer) cls += ' is-correct';
-            else if (i === answered.userAnswer) cls += ' is-wrong';
-            html += `<div class="option ${cls}">
-                <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-right:10px;${i === q.answer ? 'background:#2ed573;color:white' : (i === answered.userAnswer ? 'background:#ff4757;color:white' : 'background:#f0f0f0;color:#888')}">${reviewLabels[i]}</div>
-                <div>${opt}</div>
-            </div>`;
-        });
+        if (isTF) {
+            html += `<div class="options tf-options">`;
+            q.options.forEach((opt, i) => {
+                let cls = 'review-only';
+                if (i === q.answer) cls += ' is-correct';
+                else if (i === answered.userAnswer) cls += ' is-wrong';
+                const tfCls = i === 0 ? 'tf-true' : 'tf-false';
+                html += `<div class="option ${cls} ${tfCls}">
+                    <div class="tf-icon">${tfIconsSmall[i]}</div>
+                    <div>${opt}</div>
+                </div>`;
+            });
+            html += `</div>`;
+        } else {
+            q.options.forEach((opt, i) => {
+                let cls = 'review-only';
+                if (i === q.answer) cls += ' is-correct';
+                else if (i === answered.userAnswer) cls += ' is-wrong';
+                html += `<div class="option ${cls}">
+                    <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-right:10px;${i === q.answer ? 'background:#2ed573;color:white' : (i === answered.userAnswer ? 'background:#ff4757;color:white' : 'background:#f0f0f0;color:#888')}">${labels[i]}</div>
+                    <div>${opt}</div>
+                </div>`;
+            });
+        }
 
         html += `<div class="explanation show" style="margin-top:12px">${q.explanation}</div>`;
         html += `</div>`;
