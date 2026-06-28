@@ -456,13 +456,13 @@
     <!-- Mode Selector -->
     <div class="mode-selector">
         <button class="mode-btn active" onclick="setMode('global', this)">全局打乱复习</button>
-        <button class="mode-btn" onclick="setMode('monthly', this)">按月半复习</button>
+        <button class="mode-btn" onclick="setMode('monthly', this)">按模块复习</button>
         <button class="mode-btn" onclick="setMode('wrong', this)">错题本</button>
     </div>
 
     <!-- Monthly Navigation -->
     <div class="nav-panel" id="monthlyNav" style="display:none">
-        <h3>📅 选择月份</h3>
+        <h3>📚 选择模块</h3>
         <div class="source-grid" id="sourceGrid"></div>
     </div>
 
@@ -592,7 +592,7 @@ function saveProgress() {
 function renderMonthGrid() {
     const grid = document.getElementById('sourceGrid');
     grid.innerHTML = `<button class="source-btn ${!state.activeMonth ? 'active' : ''}" onclick="selectMonth(null)">
-        全部月份 <span class="count">(${QUESTIONS.length})</span>
+        全部模块 <span class="count">(${QUESTIONS.length})</span>
     </button>`;
     MONTHS.forEach(month => {
         const count = QUESTIONS.filter(q => q.monthId === month.id).length;
