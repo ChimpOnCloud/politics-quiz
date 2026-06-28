@@ -646,7 +646,6 @@ function filterQuestions() {
     }
 
     state.questions = qs;
-    document.getElementById('stat-total').textContent = qs.length;
 }
 
 function setMode(mode, btn) {
@@ -904,7 +903,7 @@ function updateProgress() {
 function updateStats() {
     document.getElementById('stat-correct').textContent = state.correctCount;
     document.getElementById('stat-wrong').textContent = state.wrongCount;
-    const done = Object.keys(state.answered).length;
+    const done = QUESTIONS.filter(q => state.answered[q.id]).length;
     document.getElementById('stat-done').textContent = done;
     document.getElementById('stat-total').textContent = QUESTIONS.length;
     renderMonthGrid();
