@@ -266,6 +266,8 @@
         .btn-primary:hover { background: #5a6fd6; }
         .btn-secondary { background: #f0f0f0; color: #555; }
         .btn-secondary:hover { background: #e0e0e0; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-danger:hover { background: #e8414f; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         /* Mode selector */
         .mode-selector {
@@ -589,6 +591,7 @@
 <script>
 // ===================== QUESTION BANK =====================
 let QUESTIONS = [];
+let QUESTIONS_ORIGINAL = []; // 保存原始题目数据用于恢复
 let MONTHS = []; // { id: "2025_10_1", label: "2025年10月上", file: "2025_10_1.json" }
 
 // Load questions from JSON
@@ -609,6 +612,8 @@ async function loadQuestions() {
                 QUESTIONS.push(q);
             });
         }
+        // 保存原始数据用于恢复
+        QUESTIONS_ORIGINAL = JSON.parse(JSON.stringify(QUESTIONS));
         console.log(`Loaded ${QUESTIONS.length} questions from ${MONTHS.length} months`);
     } catch (e) {
         console.error('Failed to load questions:', e);
@@ -1078,6 +1083,10 @@ function openEditor(qId) {
     document.getElementById('edit-answer').placeholder = isTF ? '0=正确, 1=错误' : '0=A, 1=B, 2=C, 3=D';
     document.getElementById('edit-explanation').value = q.explanation || '';
 
+    // 显示/隐藏恢复初始按钮
+    const hasEdits = state.edits && state.edits[qId];
+    document.getElementById('resetEditBtn').style.display = hasEdits ? '' : 'none';
+
     state.editingId = qId;
     document.getElementById('editModal').classList.remove('hidden');
 }
@@ -1112,6 +1121,32 @@ function saveEdit() {
         explanation: q.explanation
     };
     localStorage.setItem('quiz_edits', JSON.stringify(state.edits));
+
+    closeEditor();
+    renderQuestion();
+}
+
+function resetEdit() {
+    const qId = state.editingId;
+    if (!qId) return;
+
+    if (!confirm('确定要恢复这道题为初始状态吗？')) return;
+
+    // 从原始数据恢复
+    const origQ = QUESTIONS_ORIGINAL.find(x => x.id === qId);
+    const q = QUESTIONS.find(x => x.id === qId);
+    if (!origQ || !q) return;
+
+    q.question = origQ.question;
+    q.options = [...origQ.options];
+    q.answer = origQ.answer;
+    q.explanation = origQ.explanation;
+
+    // 删除 localStorage 中的编辑记录
+    if (state.edits) {
+        delete state.edits[qId];
+        localStorage.setItem('quiz_edits', JSON.stringify(state.edits));
+    }
 
     closeEditor();
     renderQuestion();
@@ -1164,6 +1199,7 @@ function applyEdits() {
             <textarea id="edit-explanation" rows="4"></textarea>
         </div>
         <div class="edit-actions">
+            <button id="resetEditBtn" class="btn btn-danger" onclick="resetEdit()" style="display:none;margin-right:auto">恢复初始</button>
             <button class="btn btn-secondary" onclick="closeEditor()">取消</button>
             <button class="btn btn-primary" onclick="saveEdit()">保存</button>
         </div>
