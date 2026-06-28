@@ -466,13 +466,13 @@ let MONTHS = []; // { id: "2025_10_1", label: "2025年10月上", file: "2025_10_
 async function loadQuestions() {
     try {
         // Load manifest
-        const manifestResp = await fetch('data/manifest.json');
+        const manifestResp = await fetch('data/manifest.json?t=' + Date.now());
         const manifest = await manifestResp.json();
         MONTHS = manifest.months;
 
         // Load all questions
         for (const month of MONTHS) {
-            const resp = await fetch(`data/${month.file}`);
+            const resp = await fetch(`data/${month.file}?t=` + Date.now());
             const questions = await resp.json();
             questions.forEach(q => {
                 q.monthId = month.id;
