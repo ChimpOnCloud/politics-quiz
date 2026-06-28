@@ -518,6 +518,7 @@ async function loadQuestions() {
             const questions = await resp.json();
             questions.forEach(q => {
                 q.monthId = month.id;
+                q.id = month.id + '_' + q.id; // globally unique ID
                 QUESTIONS.push(q);
             });
         }
@@ -723,12 +724,12 @@ function renderQuestion() {
                 else if (i === isAnswered.userAnswer) cls += ' wrong';
             }
             if (isTF) {
-                html += `<div class="option ${cls} ${tfClasses[i]}" onclick="selectOption(${q.id}, ${i})">
+                html += `<div class="option ${cls} ${tfClasses[i]}" onclick="selectOption('${q.id}', ${i})">
                     <div class="tf-icon">${tfIcons[i]}</div>
                     <div>${tfLabels[i]}</div>
                 </div>`;
             } else {
-                html += `<div class="option ${cls}" onclick="selectOption(${q.id}, ${i})">
+                html += `<div class="option ${cls}" onclick="selectOption('${q.id}', ${i})">
                     <div class="opt-label">${labels[i]}</div>
                     <div>${opt}</div>
                 </div>`;
@@ -741,14 +742,14 @@ function renderQuestion() {
             <input type="text" class="fill-input ${isAnswered ? (isAnswered.correct ? 'correct' : 'wrong') : ''}"
                    id="fillInput" placeholder="请输入答案..."
                    ${isAnswered ? `value="${isAnswered.userAnswer}" disabled` : ''}
-                   onkeydown="if(event.key==='Enter')submitFill(${q.id})">
+                   onkeydown="if(event.key==='Enter')submitFill('${q.id}')">
             <div class="correct-answer ${isAnswered && !isAnswered.correct ? 'show' : ''}" id="correctAnswer">
                 正确答案：${q.answer}
             </div>
         </div>`;
         if (!isAnswered) {
             html += `<div class="btn-row">
-                <button class="btn btn-primary" onclick="submitFill(${q.id})">提交答案</button>
+                <button class="btn btn-primary" onclick="submitFill('${q.id}')">提交答案</button>
             </div>`;
         }
     }
