@@ -19,6 +19,11 @@
       "id": "zzjs",
       "label": "讲义·政治建设与人民民主",
       "file": "zzjs.json"
+    },
+    {
+      "id": "mks",
+      "label": "讲义·马克思主义基本原理与共同富裕",
+      "file": "mks.json"
     }
   ]
 }
