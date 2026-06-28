@@ -879,12 +879,13 @@ function renderWrongList() {
         const answered = state.answered[q.id];
         const isTF = q.type === 'true_false';
         const reviewLabels = isTF ? ['正确', '错误'] : labels;
-        html += `<div class="wrong-card">
+        html += `<div class="wrong-card" style="position:relative">
             <div class="wrong-result">
                 <span style="font-weight:600;color:#333">错题 ${idx + 1}</span>
                 <span class="q-topic" style="background:#f0f0ff;color:#667eea;font-size:11px;padding:2px 8px;border-radius:4px">${q.topic}</span>
                 <span class="tag user">你的答案：${reviewLabels[answered.userAnswer]}</span>
                 <span class="tag correct">正确答案：${reviewLabels[q.answer]}</span>
+                <button class="edit-btn" onclick="openEditor('${q.id}')" title="编辑题目" style="position:absolute;top:12px;right:12px">✏️</button>
             </div>
             <div style="font-size:15px;line-height:1.7;margin-bottom:12px;font-weight:500">${formatQuestion(q)}</div>`;
 
