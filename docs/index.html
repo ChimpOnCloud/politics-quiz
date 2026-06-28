@@ -189,6 +189,16 @@
         .option.wrong { border-color: #ff4757; background: #fff5f5; }
         .option.wrong .opt-label { background: #ff4757; color: white; }
         .option.disabled { pointer-events: none; }
+        /* True/False options */
+        .tf-options {
+            flex-direction: row !important;
+            gap: 12px;
+        }
+        .tf-options .option {
+            flex: 1;
+            justify-content: center;
+            font-weight: 500;
+        }
         /* Explanation */
         .explanation {
             margin-top: 16px;
@@ -643,18 +653,21 @@ function renderQuestion() {
     const q = state.questions[state.currentIndex];
     const isAnswered = state.answered[q.id];
     const labels = ['A', 'B', 'C', 'D'];
+    const tfLabels = ['✓ 正确', '✗ 错误'];
+    const typeLabel = q.type === 'true_false' ? '判断题' : q.type === 'choice' ? '选择题' : '填空题';
 
     let html = `<div class="question-card">
         <div class="q-number">
             第 ${state.currentIndex + 1} / ${state.questions.length} 题
             <span class="q-topic">${q.topic}</span>
             <span class="q-source">${q.source}</span>
-            <span class="q-type">选择题</span>
+            <span class="q-type">${typeLabel}</span>
         </div>
         <div class="q-text">${formatQuestion(q)}</div>`;
 
-    if (q.type === 'choice') {
-        html += `<div class="options">`;
+    if (q.type === 'choice' || q.type === 'true_false') {
+        const useLabels = q.type === 'true_false' ? tfLabels : labels;
+        html += `<div class="options ${q.type === 'true_false' ? 'tf-options' : ''}">`;
         q.options.forEach((opt, i) => {
             let cls = '';
             if (isAnswered) {
@@ -663,7 +676,7 @@ function renderQuestion() {
                 else if (i === isAnswered.userAnswer) cls += ' wrong';
             }
             html += `<div class="option ${cls}" onclick="selectOption(${q.id}, ${i})">
-                <div class="opt-label">${labels[i]}</div>
+                <div class="opt-label">${useLabels[i]}</div>
                 <div>${opt}</div>
             </div>`;
         });
@@ -710,12 +723,14 @@ function renderWrongList() {
 
     state.questions.forEach((q, idx) => {
         const answered = state.answered[q.id];
+        const tfLabels2 = ['✓', '✗'];
+        const reviewLabels = q.type === 'true_false' ? tfLabels2 : labels;
         html += `<div class="wrong-card">
             <div class="wrong-result">
                 <span style="font-weight:600;color:#333">错题 ${idx + 1}</span>
                 <span class="q-topic" style="background:#f0f0ff;color:#667eea;font-size:11px;padding:2px 8px;border-radius:4px">${q.topic}</span>
-                <span class="tag user">你的答案：${labels[answered.userAnswer]}</span>
-                <span class="tag correct">正确答案：${labels[q.answer]}</span>
+                <span class="tag user">你的答案：${reviewLabels[answered.userAnswer]}</span>
+                <span class="tag correct">正确答案：${reviewLabels[q.answer]}</span>
             </div>
             <div style="font-size:15px;line-height:1.7;margin-bottom:12px;font-weight:500">${formatQuestion(q)}</div>`;
 
@@ -724,7 +739,7 @@ function renderWrongList() {
             if (i === q.answer) cls += ' is-correct';
             else if (i === answered.userAnswer) cls += ' is-wrong';
             html += `<div class="option ${cls}">
-                <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-right:10px;${i === q.answer ? 'background:#2ed573;color:white' : (i === answered.userAnswer ? 'background:#ff4757;color:white' : 'background:#f0f0f0;color:#888')}">${labels[i]}</div>
+                <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-right:10px;${i === q.answer ? 'background:#2ed573;color:white' : (i === answered.userAnswer ? 'background:#ff4757;color:white' : 'background:#f0f0f0;color:#888')}">${reviewLabels[i]}</div>
                 <div>${opt}</div>
             </div>`;
         });
