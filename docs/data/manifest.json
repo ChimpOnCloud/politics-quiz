@@ -29,6 +29,11 @@
       "id": "stgk",
       "label": "讲义·生态文明与国家公园",
       "file": "stgk.json"
+    },
+    {
+      "id": "kjxy",
+      "label": "讲义·科教兴国与创新",
+      "file": "kjxy.json"
     }
   ]
 }
