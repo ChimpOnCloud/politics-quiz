@@ -24,6 +24,11 @@
       "id": "mks",
       "label": "讲义·马克思主义基本原理与共同富裕",
       "file": "mks.json"
+    },
+    {
+      "id": "stgk",
+      "label": "讲义·生态文明与国家公园",
+      "file": "stgk.json"
     }
   ]
 }
