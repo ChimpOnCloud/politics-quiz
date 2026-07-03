@@ -27,14 +27,20 @@
         .stats-bar {
             display: flex;
             justify-content: center;
-            gap: 24px;
+            align-items: center;
+            gap: 16px;
             margin-top: 12px;
             font-size: 14px;
         }
         .stats-bar .stat {
             background: rgba(255,255,255,0.2);
-            padding: 4px 14px;
+            padding: 6px 14px;
             border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-variant-numeric: tabular-nums;
         }
         .reset-btn {
             background: rgba(255,255,255,0.25);
@@ -501,6 +507,58 @@
         }
         .wrong-card .tf-options .option.review-only.is-correct .tf-icon { background: #2ed573; }
         .wrong-card .tf-options .option.review-only.is-wrong .tf-icon { background: #ff4757; }
+
+        /* ==================== CAT FEEDBACK POPUP ==================== */
+        .cat-popup-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 500;
+            animation: catFade 1.4s ease forwards;
+        }
+        @keyframes catFade {
+            0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+            15% { opacity: 1; transform: scale(1) translateY(0); }
+            75% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.9) translateY(-10px); }
+        }
+        .cat-popup {
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            text-align: center;
+            max-width: 240px;
+            border: 3px solid;
+        }
+        .cat-popup.correct {
+            border-color: #2ed573;
+        }
+        .cat-popup.wrong {
+            border-color: #ff4757;
+        }
+        .cat-popup img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .cat-popup-text {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .cat-popup.correct .cat-popup-text {
+            color: #2ed573;
+        }
+        .cat-popup.wrong .cat-popup-text {
+            color: #ff4757;
+        }
 
         /* ==================== SIDEBAR LAYOUT ==================== */
         .app-layout {
@@ -1324,6 +1382,7 @@ function selectOption(qId, optIndex) {
         state.wrongCount++;
         state.wrongIds.add(qId);
     }
+    showCatPopup(isCorrect);
     saveProgress();
     updateStats();
     renderQuestion();
@@ -1350,6 +1409,7 @@ function submitFill(qId) {
         state.wrongCount++;
         state.wrongIds.add(qId);
     }
+    showCatPopup(isCorrect);
     saveProgress();
     updateStats();
     renderQuestion();
@@ -1431,6 +1491,28 @@ function restartQuiz() {
         filterQuestions();
         renderQuestion();
     }
+}
+
+// ===================== CAT FEEDBACK POPUP =====================
+function showCatPopup(isCorrect) {
+    // Remove any existing popup
+    const existing = document.querySelector('.cat-popup-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'cat-popup-overlay';
+
+    const imgSrc = isCorrect ? 'correct.jpeg' : 'wrong.jpeg';
+    const text = isCorrect ? '答对啦！棒棒哒！' : '答错啦，再想想！';
+    const cls = isCorrect ? 'correct' : 'wrong';
+
+    overlay.innerHTML = `<div class="cat-popup ${cls}">
+        <img src="${imgSrc}" alt="cat">
+        <div class="cat-popup-text">${text}</div>
+    </div>`;
+
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 1500);
 }
 
 // ===================== SIDEBAR =====================
