@@ -7,6 +7,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>宝宝刷题平台</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -198,6 +201,13 @@
         .option.wrong { border-color: #ff4757; background: #fff5f5; }
         .option.wrong .opt-label { background: #ff4757; color: white; }
         .option.disabled { pointer-events: none; }
+        .option .opt-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 6px;
+            margin-top: 8px;
+            object-fit: contain;
+        }
         /* True/False options */
         .tf-options {
             flex-direction: row !important;
@@ -776,67 +786,181 @@
         }
         .hamburger-btn:hover { background: rgba(255,255,255,0.4); }
 
-        /* Science Placeholder */
-        .science-placeholder {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        .science-placeholder .sp-icon {
-            font-size: 64px;
+        /* Science Quiz */
+        .science-quiz-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            text-align: center;
         }
-        .science-placeholder .sp-title {
-            font-size: 22px;
+        .science-quiz-header h2 {
+            font-size: 20px;
             font-weight: 700;
             color: #333;
+            margin-bottom: 12px;
+        }
+        .science-stats {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .science-stats .stat-chip {
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            background: #f0f0ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .science-stats .stat-chip.correct { background: #e8f5e9; color: #2e7d32; }
+        .science-stats .stat-chip.wrong { background: #ffebee; color: #c62828; }
+
+        .science-question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            animation: fadeIn 0.3s ease;
+        }
+        .science-question-card .q-label {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
             margin-bottom: 8px;
         }
-        .science-placeholder .sp-badge {
+        .science-question-card .q-category {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 12px;
-            padding: 3px 12px;
-            border-radius: 12px;
-            font-weight: 600;
+            background: #f0f0ff;
+            color: #667eea;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        .science-question-card .q-subject {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+        .science-question-card .q-text {
+            font-size: 15px;
+            line-height: 1.7;
             margin-bottom: 16px;
         }
-        .science-placeholder .sp-desc {
-            font-size: 15px;
-            color: #666;
-            line-height: 1.6;
-            max-width: 400px;
-            margin: 0 auto 24px;
+        .science-question-card .q-image {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 16px;
         }
-        .science-placeholder .sp-features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .science-placeholder .sp-feature {
-            background: white;
-            border: 1.5px solid #e8e8e8;
+        .science-question-card .sci-option {
+            padding: 12px 14px;
+            border: 1.5px solid #e0e0e0;
             border-radius: 10px;
-            padding: 14px 18px;
+            margin-bottom: 8px;
+            cursor: pointer;
             font-size: 14px;
-            color: #555;
-            min-width: 140px;
+            line-height: 1.5;
             transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
         }
-        .science-placeholder .sp-feature:hover {
+        .science-question-card .sci-option:hover {
             border-color: #667eea;
-            color: #667eea;
+            background: #f8f8ff;
         }
-        .science-placeholder .sp-feature-icon {
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-        .science-placeholder .sp-feature-label {
+        .science-question-card .sci-option .opt-label {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
             font-weight: 600;
         }
+        .science-question-card .sci-option.disabled { pointer-events: none; }
+        .science-question-card .sci-option.correct {
+            border-color: #2ed573;
+            background: #f0fff4;
+        }
+        .science-question-card .sci-option.correct .opt-label {
+            background: #2ed573;
+            color: white;
+        }
+        .science-question-card .sci-option.wrong {
+            border-color: #ff4757;
+            background: #fff5f5;
+        }
+        .science-question-card .sci-option.wrong .opt-label {
+            background: #ff4757;
+            color: white;
+        }
+        .science-answer-img {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-top: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+        .science-answer-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            animation: fadeIn 0.3s ease;
+        }
+        .science-answer-text {
+            margin-top: 12px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        .science-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 20px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .science-nav-btn:hover { border-color: #667eea; color: #667eea; }
+        .science-nav-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        .science-nav-btn.primary:hover { opacity: 0.9; }
+        .science-nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .science-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 16px;
+        }
+        .science-empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
         /* ==================== MODULE ACTIONS BAR ==================== */
         .module-actions {
@@ -884,27 +1008,6 @@
         .module-action-btn.danger:hover {
             border-color: #ff4757;
             color: #ff4757;
-        }
-
-        /* Back to list button in question card */
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 14px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.2s;
-            margin-right: auto;
-        }
-        .back-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
         }
 
         /* ==================== RESPONSIVE ==================== */
@@ -1012,13 +1115,13 @@
                     <div class="sidebar-category-icon">🔬</div>
                     <div class="sidebar-category-info">
                         <span class="sidebar-category-title">科学推理</span>
-                        <span class="sidebar-category-desc"><span class="sidebar-badge-coming">即将推出</span></span>
+                        <span class="sidebar-category-desc">理科刷题</span>
                     </div>
                     <span class="sidebar-category-arrow">›</span>
                 </button>
                 <div class="sidebar-category-body">
                     <div class="sidebar-category-body-inner">
-                        <div style="font-size:12px;color:#888;padding:4px 0;">理科刷题模块正在建设中</div>
+                        <button class="sidebar-action-btn" onclick="switchCategory('science'); closeSidebar();">开始练习 →</button>
                     </div>
                 </div>
             </div>
@@ -1032,16 +1135,23 @@
     <main class="main-content">
         <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
 
-        <div class="header">
+        <!-- v20260704-fix-backtolist -->
+<div class="header">
             <h1>📚 宝宝刷题平台</h1>
             <div class="subtitle" id="headerSubtitle">政治理论练习题库</div>
-            <div class="stats-bar">
+            <div class="stats-bar" id="politicalStatsBar">
                 <div class="stat">✅ <span id="stat-correct">0</span></div>
                 <div class="stat">❌ <span id="stat-wrong">0</span></div>
                 <div class="stat">📝 <span id="stat-done">0</span>/<span id="stat-total">0</span></div>
             </div>
+            <div class="stats-bar" id="scienceStatsBar" style="display:none">
+                <div class="stat">✅ <span id="sci-stat-correct">0</span></div>
+                <div class="stat">❌ <span id="sci-stat-wrong">0</span></div>
+                <div class="stat">📝 <span id="sci-stat-done">0</span>/<span id="sci-stat-total">0</span></div>
+            </div>
             <div style="margin-top:8px">
-                <button class="reset-btn" onclick="restartQuiz()">🔄 重置所有记录</button>
+                <button class="reset-btn" id="politicalResetBtn" onclick="restartQuiz()">🔄 重置政治理论记录</button>
+                <button class="reset-btn" id="scienceResetBtn" onclick="restartScienceQuiz()" style="display:none">🔄 重置科学推理记录</button>
             </div>
         </div>
 
@@ -1097,28 +1207,18 @@
             </div>
         </div>
 
-        <!-- Science Placeholder (hidden by default) -->
+        <!-- Science Quiz (hidden by default) -->
         <div class="container" id="scienceContainer" style="display:none">
-            <div class="science-placeholder">
-                <div class="sp-icon">🔬</div>
-                <div class="sp-title">科学推理</div>
-                <div class="sp-badge">即将推出</div>
-                <div class="sp-desc">理科刷题模块正在建设中，包含物理、化学、生物等多领域推理题目，敬请期待！</div>
-                <div class="sp-features">
-                    <div class="sp-feature">
-                        <div class="sp-feature-icon">⚡</div>
-                        <div class="sp-feature-label">物理推理</div>
-                    </div>
-                    <div class="sp-feature">
-                        <div class="sp-feature-icon">🧪</div>
-                        <div class="sp-feature-label">化学推理</div>
-                    </div>
-                    <div class="sp-feature">
-                        <div class="sp-feature-icon">🧬</div>
-                        <div class="sp-feature-label">生物推理</div>
-                    </div>
+            <div class="science-quiz-header">
+                <h2>🔬 科学推理刷题</h2>
+                <div class="science-stats" id="scienceStats">
+                    <span class="stat-chip">📝 <span id="sciDone">0</span>/<span id="sciTotal">0</span></span>
+                    <span class="stat-chip correct">✅ <span id="sciCorrect">0</span></span>
+                    <span class="stat-chip wrong">❌ <span id="sciWrong">0</span></span>
                 </div>
+                <button class="btn btn-secondary" onclick="showScienceWrongQuestions()" style="margin-top:12px">📝 错题本</button>
             </div>
+            <div id="scienceQuizArea"></div>
         </div>
     </main>
 </div>
@@ -1200,6 +1300,7 @@ function loadProgress() {
                 state.wrongIds = new Set(data.wrongIds || []);
                 state.correctCount = data.correctCount || 0;
                 state.wrongCount = data.wrongCount || 0;
+                filterQuestions();
                 updateStats();
                 renderMonthGrid();
                 renderQuestion();
@@ -1305,15 +1406,6 @@ function resetModule() {
     saveProgress();
     updateStats();
     filterQuestions();
-    renderMonthGrid();
-    renderModuleActions();
-    renderQuestion();
-}
-
-function backToList() {
-    state.currentIndex = 0;
-    filterQuestions();
-    updateStats();
     renderMonthGrid();
     renderModuleActions();
     renderQuestion();
@@ -1466,9 +1558,7 @@ function renderQuestion() {
     }
 
     // Navigation buttons
-    const backBtnHtml = isAnswered ? `<button class="back-btn" onclick="backToList()">← 题库</button>` : '';
     html += `<div class="btn-row" style="margin-top:16px">
-        ${backBtnHtml}
         <button class="btn btn-secondary" ${state.currentIndex === 0 ? 'disabled' : ''} onclick="prevQuestion()">上一题</button>
         <button class="btn btn-primary" onclick="nextQuestion()">${state.currentIndex >= state.questions.length - 1 ? '查看结果' : '下一题'}</button>
     </div>`;
@@ -1613,17 +1703,35 @@ function updateProgress() {
 }
 
 function updateStats() {
-    document.getElementById('stat-correct').textContent = state.correctCount;
-    document.getElementById('stat-wrong').textContent = state.wrongCount;
-    const done = QUESTIONS.filter(q => state.answered[q.id]).length;
-    document.getElementById('stat-done').textContent = done;
+    // 从 state.answered 重新计算，确保准确
+    let correctCount = 0;
+    let wrongCount = 0;
+    let doneCount = 0;
+
+    for (const qId in state.answered) {
+        const record = state.answered[qId];
+        doneCount++;
+        if (record.correct) {
+            correctCount++;
+        } else {
+            wrongCount++;
+        }
+    }
+
+    // 同步 state 计数器
+    state.correctCount = correctCount;
+    state.wrongCount = wrongCount;
+
+    document.getElementById('stat-correct').textContent = correctCount;
+    document.getElementById('stat-wrong').textContent = wrongCount;
+    document.getElementById('stat-done').textContent = doneCount;
     document.getElementById('stat-total').textContent = QUESTIONS.length;
 
     // Sync sidebar stats
     const sidebarTotal = document.getElementById('sidebarTotalCount');
     const sidebarDone = document.getElementById('sidebarDoneCount');
     if (sidebarTotal) sidebarTotal.textContent = QUESTIONS.length + '题';
-    if (sidebarDone) sidebarDone.textContent = '已做 ' + done;
+    if (sidebarDone) sidebarDone.textContent = '已做 ' + doneCount;
 
     renderMonthGrid();
 }
@@ -1663,6 +1771,82 @@ function restartQuiz() {
         updateStats();
         filterQuestions();
         renderQuestion();
+    }
+}
+
+function restartScienceQuiz() {
+    if (confirm('确定要重置所有科学推理做题记录吗？')) {
+        sciState.answered = {};
+        sciState.wrongIds = new Set();
+        sciState.correctCount = 0;
+        sciState.wrongCount = 0;
+        sciState.currentIndex = 0;
+        updateSciStats();
+        renderScienceQuestion();
+    }
+}
+
+function showScienceWrongQuestions() {
+    const wrongProblems = sciState.problems.filter(p => sciState.wrongIds.has(p.id));
+    if (wrongProblems.length === 0) {
+        const area = document.getElementById('scienceQuizArea');
+        area.innerHTML = `<div class="science-empty">
+            <div class="empty-icon">🎉</div>
+            <div>没有错题，继续保持！</div>
+            <button class="science-nav-btn primary" onclick="renderScienceQuestion()" style="margin-top:20px">返回练习</button>
+        </div>`;
+        return;
+    }
+
+    const area = document.getElementById('scienceQuizArea');
+    const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+    let html = '<h2 style="margin-bottom:20px;text-align:center">📝 科学推理错题本</h2>';
+
+    wrongProblems.forEach((problem, idx) => {
+        const answered = sciState.answered[problem.id];
+        html += `<div class="science-question-card">
+            <div class="q-label">
+                错题 ${idx + 1} / ${wrongProblems.length}
+                <span class="q-subject">${problem.subject}</span>
+                <span class="q-category">${problem.category}</span>
+            </div>
+            <div class="q-text">${problem.description}</div>
+            <img class="q-image" src="${problem.question_image}" alt="题目图片">
+            <div class="sci-options">`;
+
+        problem.options.forEach((opt, i) => {
+            let cls = 'disabled';
+            if (i === problem.correct_answer) cls += ' correct';
+            else if (answered && i === answered.userAnswer) cls += ' wrong';
+            html += `<div class="sci-option ${cls}">
+                <div class="opt-label">${labels[i]}</div>
+                <div>${opt}</div>
+            </div>`;
+        });
+
+        html += `</div>
+            <div class="science-answer-section">
+                <img class="science-answer-img" src="${problem.answer_image}" alt="答案解析">
+                ${problem.answer_text ? `<div class="science-answer-text">${problem.answer_text}</div>` : ''}
+            </div>
+        </div>`;
+    });
+
+    html += `<div style="margin-top:20px;text-align:center">
+        <button class="science-nav-btn primary" onclick="renderScienceQuestion()">返回练习</button>
+    </div>`;
+
+    area.innerHTML = html;
+
+    // Render LaTeX formulas
+    if (typeof renderMathInElement === 'function') {
+        renderMathInElement(area, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });
     }
 }
 
@@ -1725,15 +1909,28 @@ function switchCategory(cat) {
     const quizContainer = document.getElementById('quizContainer');
     const scienceContainer = document.getElementById('scienceContainer');
     const subtitle = document.getElementById('headerSubtitle');
+    const politicalStatsBar = document.getElementById('politicalStatsBar');
+    const scienceStatsBar = document.getElementById('scienceStatsBar');
+    const politicalResetBtn = document.getElementById('politicalResetBtn');
+    const scienceResetBtn = document.getElementById('scienceResetBtn');
 
     if (cat === 'political') {
         quizContainer.style.display = '';
         scienceContainer.style.display = 'none';
         subtitle.textContent = '政治理论练习题库';
+        politicalStatsBar.style.display = 'flex';
+        scienceStatsBar.style.display = 'none';
+        politicalResetBtn.style.display = '';
+        scienceResetBtn.style.display = 'none';
     } else if (cat === 'science') {
         quizContainer.style.display = 'none';
         scienceContainer.style.display = '';
-        subtitle.textContent = '科学推理 · 即将推出';
+        subtitle.textContent = '科学推理刷题';
+        politicalStatsBar.style.display = 'none';
+        scienceStatsBar.style.display = 'flex';
+        politicalResetBtn.style.display = 'none';
+        scienceResetBtn.style.display = '';
+        renderScienceQuestion();
     }
 
     // Auto-close sidebar on mobile
@@ -1749,15 +1946,227 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// ===================== SCIENCE QUIZ =====================
+const sciState = {
+    problems: [],
+    currentIndex: 0,
+    answered: {},
+    correctCount: 0,
+    wrongCount: 0,
+    wrongIds: new Set()
+};
+
+async function loadScienceProblems() {
+    try {
+        const resp = await fetch('data/scientific/problems.json?t=' + Date.now());
+        const data = await resp.json();
+        sciState.problems = data.problems || [];
+
+        // Load answer text for each problem
+        for (let i = 0; i < sciState.problems.length; i++) {
+            const problem = sciState.problems[i];
+            if (problem.answer_text_file) {
+                try {
+                    const txtResp = await fetch(problem.answer_text_file + '?t=' + Date.now());
+                    if (txtResp.ok) {
+                        problem.answer_text = await txtResp.text();
+                    }
+                } catch (e) {
+                    console.error(`Failed to load answer text for ${problem.id}:`, e);
+                }
+            }
+        }
+
+        console.log(`Loaded ${sciState.problems.length} science problems`);
+    } catch (e) {
+        console.error('Failed to load science problems:', e);
+    }
+}
+
+function renderScienceQuestion() {
+    const area = document.getElementById('scienceQuizArea');
+
+    if (sciState.problems.length === 0) {
+        area.innerHTML = `<div class="science-empty">
+            <div class="empty-icon">🔬</div>
+            <div>科学推理题目正在准备中...</div>
+        </div>`;
+        updateSciStats();
+        return;
+    }
+
+    const problem = sciState.problems[sciState.currentIndex];
+    const isAnswered = sciState.answered[problem.id];
+    const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    let html = `<div class="science-question-card">
+        <div class="q-label">
+            第 ${sciState.currentIndex + 1} / ${sciState.problems.length} 题
+            <span class="q-subject">${problem.subject}</span>
+            <span class="q-category">${problem.category}</span>
+        </div>
+        <div class="q-text">${problem.description}</div>`;
+
+    // Show question image if exists
+    if (problem.question_image) {
+        html += `<img class="q-image" src="${problem.question_image}" alt="题目图片">`;
+    }
+
+    // Render options (support both text and image options)
+    html += '<div class="sci-options">';
+    problem.options.forEach((opt, i) => {
+        let cls = '';
+        if (isAnswered) {
+            cls = 'disabled';
+            if (i === problem.correct_answer) cls += ' correct';
+            else if (i === isAnswered.userAnswer) cls += ' wrong';
+        }
+
+        // Check if this option has an image
+        if (problem.option_images && problem.option_images[i]) {
+            html += `<div class="sci-option ${cls}" onclick="selectSciOption('${problem.id}', ${i})">
+                <div class="opt-label">${labels[i]}</div>
+                <img class="opt-image" src="${problem.option_images[i]}" alt="选项${labels[i]}">
+            </div>`;
+        } else {
+            html += `<div class="sci-option ${cls}" onclick="selectSciOption('${problem.id}', ${i})">
+                <div class="opt-label">${labels[i]}</div>
+                <div>${opt}</div>
+            </div>`;
+        }
+    });
+    html += '</div>';
+
+    // Show answer image and text if answered
+    if (isAnswered) {
+        html += `<div class="science-answer-section">`;
+        html += `<img class="science-answer-img" src="${problem.answer_image}" alt="答案解析">`;
+        if (problem.answer_text) {
+            html += `<div class="science-answer-text">${problem.answer_text}</div>`;
+        }
+        html += `</div>`;
+    }
+
+    // Navigation buttons
+    html += `<div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+        <button class="science-nav-btn" ${sciState.currentIndex === 0 ? 'disabled' : ''} onclick="prevSciQuestion()">上一题</button>
+        <button class="science-nav-btn primary" onclick="nextSciQuestion()">${sciState.currentIndex >= sciState.problems.length - 1 ? '已完成' : '下一题'}</button>
+    </div>`;
+
+    html += '</div>';
+    area.innerHTML = html;
+    updateSciStats();
+
+    // Render LaTeX formulas
+    if (typeof renderMathInElement === 'function') {
+        renderMathInElement(area, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });
+    }
+}
+
+function selectSciOption(probId, optIndex) {
+    const problem = sciState.problems.find(p => p.id === probId);
+    if (!problem || sciState.answered[probId]) return;
+
+    const isCorrect = optIndex === problem.correct_answer;
+    sciState.answered[probId] = { correct: isCorrect, userAnswer: optIndex };
+
+    if (isCorrect) {
+        sciState.correctCount++;
+        sciState.wrongIds.delete(probId);
+    } else {
+        sciState.wrongCount++;
+        sciState.wrongIds.add(probId);
+    }
+
+    showCatPopup(isCorrect);
+    saveScienceProgress();
+    renderScienceQuestion();
+}
+
+function prevSciQuestion() {
+    if (sciState.currentIndex > 0) {
+        sciState.currentIndex--;
+        renderScienceQuestion();
+    }
+}
+
+function nextSciQuestion() {
+    if (sciState.currentIndex < sciState.problems.length - 1) {
+        sciState.currentIndex++;
+        renderScienceQuestion();
+    }
+}
+
+function updateSciStats() {
+    const done = Object.keys(sciState.answered).length;
+    document.getElementById('sciTotal').textContent = sciState.problems.length;
+    document.getElementById('sciDone').textContent = done;
+    document.getElementById('sciCorrect').textContent = sciState.correctCount;
+    document.getElementById('sciWrong').textContent = sciState.wrongCount;
+
+    // 更新顶部统计栏
+    document.getElementById('sci-stat-correct').textContent = sciState.correctCount;
+    document.getElementById('sci-stat-wrong').textContent = sciState.wrongCount;
+    document.getElementById('sci-stat-done').textContent = done;
+    document.getElementById('sci-stat-total').textContent = sciState.problems.length;
+}
+
+function saveScienceProgress() {
+    try {
+        const sciData = {
+            answered: sciState.answered,
+            wrongIds: Array.from(sciState.wrongIds),
+            correctCount: sciState.correctCount,
+            wrongCount: sciState.wrongCount,
+            currentIndex: sciState.currentIndex
+        };
+        localStorage.setItem('science_quiz_progress', JSON.stringify(sciData));
+        console.log('Science progress saved');
+    } catch (e) {
+        console.error('Failed to save science progress:', e);
+    }
+}
+
+function loadScienceProgress() {
+    try {
+        const saved = localStorage.getItem('science_quiz_progress');
+        if (saved) {
+            const sciData = JSON.parse(saved);
+            sciState.answered = sciData.answered || {};
+            sciState.wrongIds = new Set(sciData.wrongIds || []);
+            sciState.correctCount = sciData.correctCount || 0;
+            sciState.wrongCount = sciData.wrongCount || 0;
+            sciState.currentIndex = sciData.currentIndex || 0;
+            console.log('Science progress loaded');
+        }
+    } catch (e) {
+        console.error('Failed to load science progress:', e);
+    }
+}
+
 // ===================== INIT =====================
 async function init() {
+    console.log('=== Starting init ===');
     await loadQuestions();
+    console.log('Questions loaded:', QUESTIONS.length);
+
+    await loadScienceProblems();
+    console.log('Science problems loaded:', sciState.problems.length);
+
     loadProgress();
+    loadScienceProgress();
     applyEdits();
     filterQuestions();
     renderMonthGrid();
     updateStats();
     renderQuestion();
+    console.log('=== Init complete ===');
 }
 
 init();
