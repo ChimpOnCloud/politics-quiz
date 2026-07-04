@@ -1310,6 +1310,7 @@ function resetModule() {
 function backToList() {
     state.currentIndex = 0;
     filterQuestions();
+    updateStats();
     renderMonthGrid();
     renderModuleActions();
     renderQuestion();
@@ -1462,8 +1463,9 @@ function renderQuestion() {
     }
 
     // Navigation buttons
+    const backBtnHtml = isAnswered ? `<button class="back-btn" onclick="backToList()">← 题库</button>` : '';
     html += `<div class="btn-row" style="margin-top:16px">
-        <button class="back-btn" onclick="backToList()">← 题库</button>
+        ${backBtnHtml}
         <button class="btn btn-secondary" ${state.currentIndex === 0 ? 'disabled' : ''} onclick="prevQuestion()">上一题</button>
         <button class="btn btn-primary" onclick="nextQuestion()">${state.currentIndex >= state.questions.length - 1 ? '查看结果' : '下一题'}</button>
     </div>`;
