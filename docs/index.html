@@ -835,6 +835,75 @@
             font-weight: 600;
         }
 
+        /* ==================== MODULE ACTIONS BAR ==================== */
+        .module-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .module-actions .module-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .module-action-btn {
+            padding: 6px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .module-action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        .module-action-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .module-action-btn.danger:hover {
+            border-color: #ff4757;
+            color: #ff4757;
+        }
+
+        /* Back to list button in question card */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+            margin-right: auto;
+        }
+        .back-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
         /* ==================== RESPONSIVE ==================== */
         @media (max-width: 768px) {
             .app-layout {
@@ -985,6 +1054,11 @@
             <div class="nav-panel" id="monthlyNav" style="display:none">
                 <h3>📚 选择模块</h3>
                 <div class="source-grid" id="sourceGrid"></div>
+                <div class="module-actions" id="moduleActions" style="display:none">
+                    <span class="module-label" id="moduleActionsLabel"></span>
+                    <button class="module-action-btn" id="shuffleToggleBtn" onclick="toggleModuleShuffle()">🔀 打乱</button>
+                    <button class="module-action-btn danger" onclick="resetModule()">🔄 重置本模块</button>
+                </div>
             </div>
 
             <!-- Progress -->
@@ -1083,6 +1157,7 @@ async function loadQuestions() {
 let state = {
     mode: 'global',        // global, monthly
     activeMonth: null,     // null = all, "2025_10_1", etc.
+    moduleShuffle: false,  // whether to shuffle within selected module
     currentIndex: 0,
     questions: [],         // current filtered questions
     answered: {},          // { questionId: { correct: bool, userAnswer: any } }
@@ -1171,6 +1246,72 @@ function selectMonth(monthId) {
     state.currentIndex = 0;
     filterQuestions();
     renderMonthGrid();
+    renderModuleActions();
+    renderQuestion();
+}
+
+function renderModuleActions() {
+    const actionsBar = document.getElementById('moduleActions');
+    const label = document.getElementById('moduleActionsLabel');
+    const shuffleBtn = document.getElementById('shuffleToggleBtn');
+
+    if (state.mode === 'monthly' && state.activeMonth) {
+        const month = MONTHS.find(m => m.id === state.activeMonth);
+        actionsBar.style.display = 'flex';
+        label.textContent = month ? month.label : '当前模块';
+        if (state.moduleShuffle) {
+            shuffleBtn.classList.add('active');
+        } else {
+            shuffleBtn.classList.remove('active');
+        }
+    } else {
+        actionsBar.style.display = 'none';
+    }
+}
+
+function toggleModuleShuffle() {
+    state.moduleShuffle = !state.moduleShuffle;
+    state.currentIndex = 0;
+    filterQuestions();
+    renderModuleActions();
+    renderQuestion();
+}
+
+function resetModule() {
+    if (!state.activeMonth) return;
+    const month = MONTHS.find(m => m.id === state.activeMonth);
+    const monthLabel = month ? month.label : '本模块';
+
+    if (!confirm(`确定要重置「${monthLabel}」的所有做题记录吗？`)) return;
+
+    // Remove all answered questions for this module
+    const moduleQIds = QUESTIONS.filter(q => q.monthId === state.activeMonth).map(q => q.id);
+    for (const qId of moduleQIds) {
+        if (state.answered[qId]) {
+            if (state.answered[qId].correct) {
+                state.correctCount--;
+            } else {
+                state.wrongCount--;
+            }
+            delete state.answered[qId];
+        }
+        state.wrongIds.delete(qId);
+    }
+
+    state.currentIndex = 0;
+    saveProgress();
+    updateStats();
+    filterQuestions();
+    renderMonthGrid();
+    renderModuleActions();
+    renderQuestion();
+}
+
+function backToList() {
+    state.currentIndex = 0;
+    filterQuestions();
+    renderMonthGrid();
+    renderModuleActions();
     renderQuestion();
 }
 
@@ -1199,8 +1340,8 @@ function filterQuestions() {
         qs = qs.filter(q => !state.answered[q.id]);
     }
 
-    // Shuffle in global mode
-    if (state.mode === 'global') {
+    // Shuffle in global mode, or when module shuffle is enabled
+    if (state.mode === 'global' || (state.mode === 'monthly' && state.moduleShuffle)) {
         qs = shuffleArray(qs);
     }
 
@@ -1211,6 +1352,7 @@ function setMode(mode, btn) {
     state.mode = mode;
     state.currentIndex = 0;
     state.activeMonth = null;
+    state.moduleShuffle = false;
 
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -1221,6 +1363,7 @@ function setMode(mode, btn) {
 
     filterQuestions();
     renderMonthGrid();
+    renderModuleActions();
     renderQuestion();
 }
 
@@ -1320,6 +1463,7 @@ function renderQuestion() {
 
     // Navigation buttons
     html += `<div class="btn-row" style="margin-top:16px">
+        <button class="back-btn" onclick="backToList()">← 题库</button>
         <button class="btn btn-secondary" ${state.currentIndex === 0 ? 'disabled' : ''} onclick="prevQuestion()">上一题</button>
         <button class="btn btn-primary" onclick="nextQuestion()">${state.currentIndex >= state.questions.length - 1 ? '查看结果' : '下一题'}</button>
     </div>`;
