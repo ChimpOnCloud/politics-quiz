@@ -1,0 +1,1 @@
+整理新题目时，请阅读files/scientific/physics/SKILL.md。
