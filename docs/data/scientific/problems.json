@@ -1,0 +1,58 @@
+{
+  "problems": [
+    {
+      "id": "physics_physics_1",
+      "subject": "物理",
+      "category": "运动学",
+      "title": "千斤顶速度分解",
+      "question_image": "data/scientific/physics_physics_1_problem.png",
+      "answer_image": "data/scientific/physics_physics_1_answer.png",
+      "answer_text_file": "data/scientific/physics_physics_1_answer.txt",
+      "description": "某千斤顶的结构如图所示，四根等长杆由铰链相连。摇动手柄竖直抬升重物过程中，$A$、$C$ 两点的间距每秒均匀缩短 $2\\text{mm}$，当 $\\angle CAB = 45^\\circ$ 时，下列说法正确的是",
+      "options": [
+        "$A$ 与 $C$ 两点速度大小相等，方向相反",
+        "$B$ 点速度方向竖直向上，大小为 $2\\text{mm/s}$",
+        "$C$ 点速度方向沿 $CB$ 向上，大小为 $1\\text{mm/s}$",
+        "$A$ 点相对 $C$ 点的速度沿水平方向，大小为 $2\\text{mm/s}$"
+      ],
+      "correct_answer": 1
+    },
+    {
+      "id": "physics_physics_2",
+      "subject": "物理",
+      "category": "运动学",
+      "title": "哑铃位移计算",
+      "question_image": "data/scientific/physics_physics_2_problem.png",
+      "answer_text_file": "data/scientific/physics_physics_2_answer.txt",
+      "description": "某同学健身时，哑铃被举高 $0.5\\text{m}$ 后再回到原位置，如图所示。如此重复 $10$ 次，哑铃的位移大小为",
+      "options": [
+        "$0$",
+        "$5\\text{m}$",
+        "$10\\text{m}$",
+        "$11\\text{m}$"
+      ],
+      "correct_answer": 0
+    },
+    {
+      "id": "physics_physics_3",
+      "subject": "物理",
+      "category": "运动学",
+      "title": "马车恒定功率启动",
+      "answer_text_file": "data/scientific/physics_physics_3_answer.txt",
+      "description": "我国科技爱好者复原了春秋战国时期带有刃车軎（wei）的马车，并对其性能进行了测试。在 $t_1 - t_2$ 时间内，若马车以恒定功率在水平路面上沿直线运动。速度从 $v_1$ 加速到 $v_2$，假定马车所受阻力不变。则马车运动的 v-t 图像可能是",
+      "options": [
+        "图像A",
+        "图像B",
+        "图像C",
+        "图像D"
+      ],
+      "option_images": [
+        "data/scientific/physics_physics_3_A.png",
+        "data/scientific/physics_physics_3_B.png",
+        "data/scientific/physics_physics_3_C.png",
+        "data/scientific/physics_physics_3_D.png"
+      ],
+      "correct_answer": 0
+    }
+  ]
+}
