@@ -1295,20 +1295,22 @@ let activeCategory = 'political'; // 'political' | 'science'
 async function loadQuestions() {
     try {
         // Load manifest
-        const manifestResp = await fetch('data/manifest.json?t=' + Date.now());
+        const manifestResp = await fetch('data/manifest.json');
         const manifest = await manifestResp.json();
         MONTHS = manifest.months;
 
-        // Load all questions
-        for (const month of MONTHS) {
-            const resp = await fetch(`data/${month.file}?t=` + Date.now());
-            const questions = await resp.json();
+        // Load all questions in parallel
+        const results = await Promise.all(
+            MONTHS.map(month => fetch(`data/${month.file}`).then(r => r.json()))
+        );
+        results.forEach((questions, i) => {
+            const month = MONTHS[i];
             questions.forEach(q => {
                 q.monthId = month.id;
-                q.id = month.id + '_' + q.id; // globally unique ID
+                q.id = month.id + '_' + q.id;
                 QUESTIONS.push(q);
             });
-        }
+        });
         // 保存原始数据用于恢复
         QUESTIONS_ORIGINAL = JSON.parse(JSON.stringify(QUESTIONS));
         console.log(`Loaded ${QUESTIONS.length} questions from ${MONTHS.length} months`);
@@ -2033,7 +2035,7 @@ const sciState = {
 
 async function loadScienceProblems() {
     try {
-        const resp = await fetch('data/scientific/problems.json?t=' + Date.now());
+        const resp = await fetch('data/scientific/problems.json');
         const data = await resp.json();
         sciState.allProblems = data.problems || [];
 
@@ -2042,7 +2044,7 @@ async function loadScienceProblems() {
             const problem = sciState.allProblems[i];
             if (problem.answer_text_file) {
                 try {
-                    const txtResp = await fetch(problem.answer_text_file + '?t=' + Date.now());
+                    const txtResp = await fetch(problem.answer_text_file);
                     if (txtResp.ok) {
                         problem.answer_text = await txtResp.text();
                     }
@@ -2315,10 +2317,8 @@ function loadScienceProgress() {
 // ===================== INIT =====================
 async function init() {
     console.log('=== Starting init ===');
-    await loadQuestions();
+    await Promise.all([loadQuestions(), loadScienceProblems()]);
     console.log('Questions loaded:', QUESTIONS.length);
-
-    await loadScienceProblems();
     console.log('Science problems loaded:', sciState.allProblems.length);
 
     loadProgress();
