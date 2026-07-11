@@ -2247,7 +2247,7 @@ function nextSciQuestion() {
 }
 
 function updateSciStats() {
-    const done = Object.keys(sciState.answered).length;
+    const done = sciState.problems.filter(p => sciState.answered[p.id]).length;
     document.getElementById('sciTotal').textContent = sciState.problems.length;
     document.getElementById('sciDone').textContent = done;
     document.getElementById('sciCorrect').textContent = sciState.correctCount;
