@@ -1021,6 +1021,34 @@
             background: #e8eaff;
             color: #667eea;
         }
+        .science-module-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .science-module-card .science-module-btn {
+            flex: 1;
+            padding-right: 36px;
+        }
+        .science-module-reset {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            border-radius: 6px;
+            opacity: 0.4;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .science-module-reset:hover {
+            opacity: 1;
+            background: #ffe0e0;
+        }
 
         /* ==================== MODULE ACTIONS BAR ==================== */
         .module-actions {
@@ -1851,6 +1879,24 @@ function restartScienceQuiz() {
     }
 }
 
+function resetScienceModule(subject, category) {
+    if (confirm(`确定要重置"${category}"模块的做题记录吗？`)) {
+        const moduleProblems = sciState.allProblems.filter(p => p.subject === subject && p.category === category);
+        moduleProblems.forEach(p => {
+            delete sciState.answered[p.id];
+            sciState.wrongIds.delete(p.id);
+        });
+        if (sciState.selectedModule && sciState.selectedModule.subject === subject && sciState.selectedModule.category === category) {
+            sciState.correctCount = 0;
+            sciState.wrongCount = 0;
+            sciState.currentIndex = 0;
+        }
+        saveScienceProgress();
+        updateSciStats();
+        renderScienceModules();
+    }
+}
+
 function showScienceWrongQuestions() {
     const wrongProblems = sciState.problems.filter(p => sciState.wrongIds.has(p.id));
     if (wrongProblems.length === 0) {
@@ -2084,10 +2130,17 @@ function renderScienceModules() {
         for (const category of Object.keys(grouped[subject])) {
             const count = grouped[subject][category].length;
             const answeredCount = grouped[subject][category].filter(p => sciState.answered[p.id]).length;
-            html += `<button class="science-module-btn" onclick="selectScienceModule('${subject}', '${category}')">
+            const escapedSubject = subject.replace(/'/g, "\\'");
+            const escapedCategory = category.replace(/'/g, "\\'");
+            html += `<div class="science-module-card">`;
+            html += `<button class="science-module-btn" onclick="selectScienceModule('${escapedSubject}', '${escapedCategory}')">
                 <span>${category}</span>
                 <span class="module-count">${answeredCount}/${count}</span>
             </button>`;
+            if (answeredCount > 0) {
+                html += `<button class="science-module-reset" title="重置本模块" onclick="resetScienceModule('${escapedSubject}', '${escapedCategory}')">🗑️</button>`;
+            }
+            html += `</div>`;
         }
         html += `</div></div>`;
     }
