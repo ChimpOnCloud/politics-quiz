@@ -1898,13 +1898,14 @@ function resetScienceModule(subject, category) {
 }
 
 function showScienceWrongQuestions() {
-    const wrongProblems = sciState.problems.filter(p => sciState.wrongIds.has(p.id));
+    document.getElementById('scienceModulePanel').style.display = 'none';
+    const wrongProblems = sciState.allProblems.filter(p => sciState.wrongIds.has(p.id));
     if (wrongProblems.length === 0) {
         const area = document.getElementById('scienceQuizArea');
         area.innerHTML = `<div class="science-empty">
             <div class="empty-icon">🎉</div>
             <div>没有错题，继续保持！</div>
-            <button class="science-nav-btn primary" onclick="renderScienceQuestion()" style="margin-top:20px">返回练习</button>
+            <button class="science-nav-btn primary" onclick="${sciState.selectedModule ? 'renderScienceQuestion()' : 'backToScienceModules()'}" style="margin-top:20px">返回</button>
         </div>`;
         return;
     }
@@ -1950,7 +1951,7 @@ function showScienceWrongQuestions() {
     });
 
     html += `<div style="margin-top:20px;text-align:center">
-        <button class="science-nav-btn primary" onclick="renderScienceQuestion()">返回练习</button>
+        <button class="science-nav-btn primary" onclick="${sciState.selectedModule ? 'renderScienceQuestion()' : 'backToScienceModules()'}">返回</button>
     </div>`;
 
     area.innerHTML = html;
@@ -2145,6 +2146,7 @@ function renderScienceModules() {
         html += `</div></div>`;
     }
     panel.innerHTML = html;
+    updateSciStats();
 }
 
 function selectScienceModule(subject, category) {
@@ -2300,17 +2302,27 @@ function nextSciQuestion() {
 }
 
 function updateSciStats() {
-    const done = sciState.problems.filter(p => sciState.answered[p.id]).length;
-    document.getElementById('sciTotal').textContent = sciState.problems.length;
-    document.getElementById('sciDone').textContent = done;
-    document.getElementById('sciCorrect').textContent = sciState.correctCount;
-    document.getElementById('sciWrong').textContent = sciState.wrongCount;
+    const totalProblems = sciState.allProblems.length;
+    let doneCount = 0, correctCount = 0, wrongCount = 0;
+    sciState.allProblems.forEach(p => {
+        const a = sciState.answered[p.id];
+        if (a) {
+            doneCount++;
+            if (a.correct) correctCount++;
+            else wrongCount++;
+        }
+    });
+
+    document.getElementById('sciTotal').textContent = totalProblems;
+    document.getElementById('sciDone').textContent = doneCount;
+    document.getElementById('sciCorrect').textContent = correctCount;
+    document.getElementById('sciWrong').textContent = wrongCount;
 
     // 更新顶部统计栏
-    document.getElementById('sci-stat-correct').textContent = sciState.correctCount;
-    document.getElementById('sci-stat-wrong').textContent = sciState.wrongCount;
-    document.getElementById('sci-stat-done').textContent = done;
-    document.getElementById('sci-stat-total').textContent = sciState.problems.length;
+    document.getElementById('sci-stat-correct').textContent = correctCount;
+    document.getElementById('sci-stat-wrong').textContent = wrongCount;
+    document.getElementById('sci-stat-done').textContent = doneCount;
+    document.getElementById('sci-stat-total').textContent = totalProblems;
 }
 
 function saveScienceProgress() {
