@@ -962,6 +962,53 @@
         }
         .science-empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
+        .sci-qnav-bar {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        .sci-qnav-bar::-webkit-scrollbar { height: 5px; }
+        .sci-qnav-bar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        .sci-qnav-item {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1.5px solid #e0e0e0;
+            background: #f9f9f9;
+            color: #666;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .sci-qnav-item:hover { border-color: #667eea; color: #667eea; }
+        .sci-qnav-item.current {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .sci-qnav-item.correct {
+            border-color: #2ed573;
+            background: #2ed573;
+            color: white;
+        }
+        .sci-qnav-item.wrong {
+            border-color: #ff4757;
+            background: #ff4757;
+            color: white;
+        }
+
         .science-module-panel {
             background: white;
             border-radius: 12px;
@@ -2194,7 +2241,18 @@ function renderScienceQuestion() {
     const isAnswered = sciState.answered[problem.id];
     const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-    let html = `<div class="science-question-card">
+    // Question navigation bar
+    let navHtml = '<div class="sci-qnav-bar" id="sciQnavBar">';
+    sciState.problems.forEach((p, i) => {
+        const a = sciState.answered[p.id];
+        let cls = 'sci-qnav-item';
+        if (i === sciState.currentIndex) cls += ' current';
+        else if (a) cls += a.correct ? ' correct' : ' wrong';
+        navHtml += `<div class="${cls}" onclick="jumpToSciQuestion(${i})">${i + 1}</div>`;
+    });
+    navHtml += '</div>';
+
+    let html = navHtml + `<div class="science-question-card">
         <div class="q-label">
             第 ${sciState.currentIndex + 1} / ${sciState.problems.length} 题
             <span class="q-subject">${problem.subject}</span>
@@ -2255,6 +2313,15 @@ function renderScienceQuestion() {
     area.innerHTML = html;
     updateSciStats();
 
+    // Auto-scroll nav bar to current question
+    const navBar = document.getElementById('sciQnavBar');
+    if (navBar) {
+        const currentItem = navBar.children[sciState.currentIndex];
+        if (currentItem) {
+            currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+
     // Render LaTeX formulas
     if (typeof renderMathInElement === 'function') {
         renderMathInElement(area, {
@@ -2301,6 +2368,13 @@ function nextSciQuestion() {
     }
 }
 
+function jumpToSciQuestion(index) {
+    if (index >= 0 && index < sciState.problems.length) {
+        sciState.currentIndex = index;
+        renderScienceQuestion();
+    }
+}
+
 function updateSciStats() {
     const totalProblems = sciState.allProblems.length;
     let doneCount = 0, correctCount = 0, wrongCount = 0;
@@ -2326,17 +2400,23 @@ function updateSciStats() {
 }
 
 function saveScienceProgress() {
+    const sciData = {
+        answered: sciState.answered,
+        wrongIds: Array.from(sciState.wrongIds),
+        selectedModule: sciState.selectedModule,
+        currentIndex: sciState.currentIndex
+    };
+
     try {
-        const sciData = {
-            answered: sciState.answered,
-            wrongIds: Array.from(sciState.wrongIds),
-            selectedModule: sciState.selectedModule,
-            currentIndex: sciState.currentIndex
-        };
         localStorage.setItem('science_quiz_progress', JSON.stringify(sciData));
         console.log('Science progress saved');
     } catch (e) {
         console.error('Failed to save science progress:', e);
+    }
+
+    // Save to Firebase
+    if (window.firebaseReady) {
+        window.firebaseDb.ref('science_progress').set(sciData);
     }
 }
 
@@ -2376,6 +2456,52 @@ function loadScienceProgress() {
         }
     } catch (e) {
         console.error('Failed to load science progress:', e);
+    }
+
+    // Listen to Firebase for real-time sync
+    if (window.firebaseReady) {
+        const sciProgressRef = window.firebaseDb.ref('science_progress');
+        sciProgressRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            sciState.answered = data.answered || {};
+            sciState.wrongIds = new Set(data.wrongIds || []);
+            sciState.currentIndex = data.currentIndex || 0;
+
+            if (data.selectedModule && sciState.allProblems.length > 0) {
+                const { subject, category } = data.selectedModule;
+                sciState.selectedModule = { subject, category };
+                sciState.problems = sciState.allProblems.filter(p => p.subject === subject && p.category === category);
+
+                sciState.correctCount = 0;
+                sciState.wrongCount = 0;
+                sciState.problems.forEach(p => {
+                    const a = sciState.answered[p.id];
+                    if (a) {
+                        if (a.correct) sciState.correctCount++;
+                        else sciState.wrongCount++;
+                    }
+                });
+
+                if (sciState.currentIndex >= sciState.problems.length) {
+                    sciState.currentIndex = 0;
+                }
+            } else {
+                sciState.selectedModule = null;
+                sciState.problems = [];
+            }
+
+            // Re-render if science tab is active
+            if (activeCategory === 'science') {
+                if (sciState.selectedModule) {
+                    renderScienceQuestion();
+                } else {
+                    renderScienceModules();
+                }
+            }
+            updateSciStats();
+        });
     }
 }
 
