@@ -2129,7 +2129,7 @@ const sciState = {
 
 async function loadScienceProblems() {
     try {
-        const resp = await fetch('data/scientific/problems.json?v=20260726');
+        const resp = await fetch('data/scientific/problems.json?v=20260728');
         const data = await resp.json();
         sciState.allProblems = data.problems || [];
 
