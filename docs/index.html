@@ -855,6 +855,22 @@
             line-height: 1.7;
             margin-bottom: 16px;
         }
+        .science-question-card .q-hint {
+            background: #fff8e1;
+            border-left: 4px solid #ffb300;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            font-size: 13.5px;
+            line-height: 1.7;
+            color: #6d4c00;
+        }
+        .science-question-card .q-hint .q-hint-label {
+            display: inline-block;
+            font-weight: 700;
+            color: #ff8f00;
+            margin-right: 6px;
+        }
         .science-question-card .q-image {
             width: 100%;
             max-width: 600px;
@@ -1968,8 +1984,11 @@ function showScienceWrongQuestions() {
                 错题 ${idx + 1} / ${wrongProblems.length}
                 <span class="q-subject">${problem.subject}</span>
                 <span class="q-category">${problem.category}</span>
-            </div>
-            <div class="q-text">${problem.description}</div>`;
+            </div>`;
+        if (problem.hint) {
+            html += `<div class="q-hint"><span class="q-hint-label">💡 知识提示</span>${problem.hint}</div>`;
+        }
+        html += `<div class="q-text">${problem.description}</div>`;
         if (problem.question_image) {
             html += `<img class="q-image" src="${problem.question_image}" alt="题目图片">`;
         }
@@ -2129,7 +2148,7 @@ const sciState = {
 
 async function loadScienceProblems() {
     try {
-        const resp = await fetch('data/scientific/problems.json?v=20260728');
+        const resp = await fetch('data/scientific/problems.json?v=20260728.2');
         const data = await resp.json();
         sciState.allProblems = data.problems || [];
 
@@ -2257,8 +2276,11 @@ function renderScienceQuestion() {
             第 ${sciState.currentIndex + 1} / ${sciState.problems.length} 题
             <span class="q-subject">${problem.subject}</span>
             <span class="q-category">${problem.category}</span>
-        </div>
-        <div class="q-text">${problem.description}</div>`;
+        </div>`;
+    if (problem.hint) {
+        html += `<div class="q-hint"><span class="q-hint-label">💡 知识提示</span>${problem.hint}</div>`;
+    }
+    html += `<div class="q-text">${problem.description}</div>`;
 
     // Show question image if exists
     if (problem.question_image) {
