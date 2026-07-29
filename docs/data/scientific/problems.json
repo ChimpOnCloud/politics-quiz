@@ -2881,7 +2881,8 @@
         "若向原溶液中加入氢氧化钠溶液，会立即产生红褐色沉淀"
       ],
       "correct_answer": 1,
-      "answer_text": "答案：B\n解析：B对：滴加 $\\text{KSCN}$ 无变化说明原溶液无 $\\text{Fe}^{3+}$，滴加氯水后变红是因为发生反应 $2\\text{Fe}^{2+} + \\text{Cl}_2 \\rightarrow 2\\text{Fe}^{3+} + 2\\text{Cl}^-$，生成的 $\\text{Fe}^{3+}$ 与 $\\text{SCN}^-$ 结合呈红色，证明原溶液含有 $\\text{Fe}^{2+}$；C错：该反应中 $\\text{Fe}^{2+}$ 表现还原性；D错：原溶液加 $\\text{NaOH}$ 应先生成白色 $\\text{Fe}(\\text{OH})_2$ 沉淀。"
+      "answer_text": "答案：B\n解析：B对：滴加 $\\text{KSCN}$ 无变化说明原溶液无 $\\text{Fe}^{3+}$，滴加氯水后变红是因为发生反应 $2\\text{Fe}^{2+} + \\text{Cl}_2 \\rightarrow 2\\text{Fe}^{3+} + 2\\text{Cl}^-$，生成的 $\\text{Fe}^{3+}$ 与 $\\text{SCN}^-$ 结合呈红色，证明原溶液含有 $\\text{Fe}^{2+}$；C错：该反应中 $\\text{Fe}^{2+}$ 表现还原性；D错：原溶液加 $\\text{NaOH}$ 应先生成白色 $\\text{Fe}(\\text{OH})_2$ 沉淀。",
+      "hint": "$\\text{KSCN}$ 溶液遇到 $\\text{Fe}^{3+}$ 会变为血红色，遇到 $\\text{Fe}^{2+}$ 则无明显现象。"
     },
     {
       "id": "chemistry_metal_18",
