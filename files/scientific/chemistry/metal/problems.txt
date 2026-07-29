@@ -144,6 +144,7 @@ D. 铜片未能完全溶解，硝酸有剩余
 解析：C对：开始时为浓硝酸，发生反应 $\text{Cu} + 4\text{HNO}_3(\text{浓}) \rightarrow \text{Cu}(\text{NO}_3)_2 + 2\text{NO}_2\uparrow + 2\text{H}_2\text{O}$；随着硝酸被消耗且有水生成，硝酸浓度变稀，后续发生 $3\text{Cu} + 8\text{HNO}_3(\text{稀}) \rightarrow 3\text{Cu}(\text{NO}_3)_2 + 2\text{NO}\uparrow + 4\text{H}_2\text{O}$，因此生成 $\text{NO}_2$ 与 $\text{NO}$ 的混合气体。经计算，$0.1\text{ mol}$ 铜完全溶解最多消耗 $0.4\text{ mol}$ $\text{HNO}_3$（若全为浓硝酸），变稀后消耗硝酸更少，故铜完全溶解。
 
 17.（离子检验与沉淀转化）
+【知识提示】：$\text{KSCN}$ 溶液遇到 $\text{Fe}^{3+}$ 会变为血红色，遇到 $\text{Fe}^{2+}$ 则无明显现象。
 题干：向某无色或浅色未知溶液中加入硫氰化钾（$\text{KSCN}$）溶液，无明显变化；再滴加几滴新制氯水，溶液瞬间变为红色。下列说法正确的是（ ）
 A. 原溶液中一定含有 $\text{Fe}^{3+}$
 B. 原溶液中一定含有 $\text{Fe}^{2+}$，加氯水后被氧化为 $\text{Fe}^{3+}$
