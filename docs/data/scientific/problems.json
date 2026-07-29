@@ -2857,16 +2857,16 @@
       "id": "chemistry_metal_16",
       "subject": "化学",
       "category": "金属（铁、铜、锌、锰）",
-      "title": "强氧化性酸反应与产物计算",
-      "description": "将 $0.1\\text{ mol}$ 的金属铜片投入到含有 $0.4\\text{ mol}$ 硝酸（$\\text{HNO}_3$）的浓溶液中，充分反应后（不考虑氮氧化物的转化与溶解），生成的气体或溶液情况是（ ）",
+      "title": "铜与浓硝酸反应现象",
+      "description": "将一小块铜片放入盛有浓硝酸的试管中，下列关于反应现象的描述正确的是（ ）",
       "options": [
-        "产生的气体全部是红棕色的 $\\text{NO}_2$",
-        "产生的气体全部是无色的 $\\text{NO}$",
-        "随着反应进行，硝酸变稀，产生的气体为 $\\text{NO}_2$ 和 $\\text{NO}$ 的混合气体",
-        "铜片未能完全溶解，硝酸有剩余"
+        "铜片逐渐溶解，溶液变为蓝色，并产生红棕色气体",
+        "铜片无明显变化，因为铜在浓硝酸中会发生钝化",
+        "铜片溶解，溶液变为无色，并产生大量无色无味气体",
+        "铜片表面产生大量气泡，生成的气体为氢气"
       ],
-      "correct_answer": 2,
-      "answer_text": "答案：C\n解析：C对：开始时为浓硝酸，发生反应 $\\text{Cu} + 4\\text{HNO}_3(\\text{浓}) \\rightarrow \\text{Cu}(\\text{NO}_3)_2 + 2\\text{NO}_2\\uparrow + 2\\text{H}_2\\text{O}$；随着硝酸被消耗且有水生成，硝酸浓度变稀，后续发生 $3\\text{Cu} + 8\\text{HNO}_3(\\text{稀}) \\rightarrow 3\\text{Cu}(\\text{NO}_3)_2 + 2\\text{NO}\\uparrow + 4\\text{H}_2\\text{O}$，因此生成 $\\text{NO}_2$ 与 $\\text{NO}$ 的混合气体。经计算，$0.1\\text{ mol}$ 铜完全溶解最多消耗 $0.4\\text{ mol}$ $\\text{HNO}_3$（若全为浓硝酸），变稀后消耗硝酸更少，故铜完全溶解。"
+      "correct_answer": 0,
+      "answer_text": "答案：A\n解析：A对：铜与浓硝酸发生反应 $\\text{Cu} + 4\\text{HNO}_3(\\text{浓}) \\rightarrow \\text{Cu}(\\text{NO}_3)_2 + 2\\text{NO}_2\\uparrow + 2\\text{H}_2\\text{O}$，铜片逐渐溶解，生成蓝色的硝酸铜溶液，同时放出红棕色的 $\\text{NO}_2$ 气体；B错：钝化只发生在铁、铝等少数金属上，铜在浓硝酸中不会钝化，会持续反应；C错：反应生成的 $\\text{Cu}^{2+}$ 使溶液呈蓝色，并非无色；D错：硝酸是强氧化性酸，与金属反应生成氮的氧化物（如此处的 $\\text{NO}_2$），不会生成氢气。"
     },
     {
       "id": "chemistry_metal_17",
